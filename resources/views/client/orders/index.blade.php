@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('title', 'Мои заказы')
-
+/
 @section('content')
 <h1 class="text-3xl font-bold text-gray-900 mb-6">Мои заказы</h1>
 

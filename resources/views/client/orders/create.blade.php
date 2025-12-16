@@ -199,7 +199,7 @@
         </div>
 
         <div class="mt-4 text-center text-sm text-gray-600" id="seat-selection-info">
-            <p>Выберите пассажира, затем кликните на место в автобусе</p>
+            <p>Выберите пассажира из списка, затем кликните на место в автобусе. Можно выбрать место для любого пассажира в любой момент.</p>
         </div>
     </div>
 
@@ -235,41 +235,44 @@
 <style>
 .bus-container {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    padding: 2rem;
-    border-radius: 1rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .bus-layout {
     display: flex;
     justify-content: space-between;
-    gap: 2rem;
-    margin: 2rem 0;
+    gap: 0.75rem;
+    margin: 1rem 0;
 }
 
 .bus-side {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 0.5rem;
 }
 
 .bus-aisle {
-    width: 60px;
+    width: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .aisle-line {
-    width: 4px;
+    width: 2px;
     height: 100%;
     background: repeating-linear-gradient(
         to bottom,
         #d1d5db 0px,
-        #d1d5db 10px,
-        transparent 10px,
-        transparent 20px
+        #d1d5db 8px,
+        transparent 8px,
+        transparent 16px
     );
 }
 
@@ -283,19 +286,21 @@
     align-items: center;
     justify-content: center;
     width: 100%;
+    min-height: 50px;
+    max-height: 60px;
     aspect-ratio: 1;
-    border: 3px solid #4b5563;
-    border-radius: 8px;
+    border: 2px solid #4b5563;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
     background: #f3f4f6;
     position: relative;
-    padding: 0;
+    padding: 4px;
 }
 
 .seat-button.available:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .seat-button.window-seat {
@@ -313,7 +318,7 @@
 .seat-button.selected {
     background: #fef3c7;
     border-color: #f59e0b;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
 }
 
 .seat-button:disabled {
@@ -322,13 +327,15 @@
 
 .seat-number {
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 0.75rem;
     color: #1f2937;
+    line-height: 1;
 }
 
 .seat-icon {
-    font-size: 0.8rem;
-    margin-top: 2px;
+    font-size: 0.65rem;
+    margin-top: 1px;
+    line-height: 1;
 }
 
 .selected-place-display {
@@ -346,19 +353,37 @@
 }
 
 @media (max-width: 768px) {
+    .bus-container {
+        padding: 0.75rem;
+        max-height: 70vh;
+    }
+    
     .bus-layout {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.5rem;
     }
     
     .bus-aisle {
         width: 100%;
-        height: 20px;
+        height: 15px;
     }
     
     .aisle-line {
         width: 100%;
-        height: 4px;
+        height: 2px;
+    }
+    
+    .seat-button {
+        min-height: 45px;
+        max-height: 55px;
+    }
+    
+    .seat-number {
+        font-size: 0.7rem;
+    }
+    
+    .seat-icon {
+        font-size: 0.6rem;
     }
 }
 </style>
@@ -396,80 +421,90 @@ function onPassengerChange(index) {
 }
 
 function selectPlaceForPassenger(placeNumber) {
-    // Проверяем, выбран ли пассажир
-    if (currentSelectedPassengerIndex === null) {
-        alert('Сначала выберите пассажира');
-        return;
-    }
-
-    // Проверяем, не занято ли место
     const seatWrapper = document.querySelector(`[data-place-number="${placeNumber}"]`);
     if (seatWrapper && seatWrapper.dataset.isOccupied === '1') {
         alert('Это место уже занято');
         return;
     }
 
-    // Получаем текущее место для этого пассажира
-    const placeInput = document.querySelector(`[data-passenger-index="${currentSelectedPassengerIndex}"] .place-input`);
+    let targetPassengerIndex = currentSelectedPassengerIndex;
+
+    if (targetPassengerIndex === null) {
+        const passengerRows = document.querySelectorAll('.passenger-row');
+        for (let i = 0; i < passengerRows.length; i++) {
+            const passengerSelect = passengerRows[i].querySelector('.passenger-select');
+            const placeInput = passengerRows[i].querySelector('.place-input');
+            if (passengerSelect && passengerSelect.value && (!placeInput || !placeInput.value)) {
+                targetPassengerIndex = i;
+                break;
+            }
+        }
+    }
+
+    if (targetPassengerIndex === null) {
+        alert('Сначала выберите пассажира');
+        return;
+    }
+
+    const passengerSelect = document.querySelector(`[data-passenger-index="${targetPassengerIndex}"] .passenger-select`);
+    if (!passengerSelect || !passengerSelect.value) {
+        alert('Сначала выберите пассажира');
+        return;
+    }
+
+    const placeInput = document.querySelector(`[data-passenger-index="${targetPassengerIndex}"] .place-input`);
     const currentPlace = placeInput ? parseInt(placeInput.value) : null;
-    
-    // Если это место уже выбрано для этого пассажира, ничего не делаем
+
     if (currentPlace === placeNumber) {
+        clearPlace(targetPassengerIndex);
         return;
     }
 
-    // Проверяем, не выбрано ли уже это место другим пассажиром
-    if (selectedPlaces.has(placeNumber) && currentPlace !== placeNumber) {
-        alert('Это место уже выбрано для другого пассажира');
-        return;
-    }
-
-    // Проверяем количество пассажиров
     const passengerRows = document.querySelectorAll('.passenger-row');
-    const passengerCount = passengerRows.length;
-    if (selectedPlaces.size >= passengerCount && !currentPlace) {
-        alert('Нельзя выбрать больше мест, чем пассажиров в заказе');
-        return;
+    for (let i = 0; i < passengerRows.length; i++) {
+        if (i === targetPassengerIndex) continue;
+        const otherPlaceInput = passengerRows[i].querySelector('.place-input');
+        if (otherPlaceInput && parseInt(otherPlaceInput.value) === placeNumber) {
+            clearPlace(i);
+            break;
+        }
     }
 
-    // Убираем предыдущее место для этого пассажира, если было
     if (currentPlace) {
         selectedPlaces.delete(currentPlace);
-        updateSeatVisualState(currentPlace, false);
+        updateSeatVisualState(currentPlace, false, null);
     }
 
-    // Устанавливаем новое место
     placeInput.value = placeNumber;
     selectedPlaces.add(placeNumber);
-    
-    // Обновляем отображение
-    const placeDisplay = document.getElementById(`selected-place-${currentSelectedPassengerIndex}`);
+
+    const placeDisplay = document.getElementById(`selected-place-${targetPassengerIndex}`);
     placeDisplay.textContent = `Место №${placeNumber}`;
     placeDisplay.classList.add('has-place');
-    
-    // Показываем кнопку очистки
-    const clearBtn = document.getElementById(`clear-place-${currentSelectedPassengerIndex}`);
+
+    const clearBtn = document.getElementById(`clear-place-${targetPassengerIndex}`);
     if (clearBtn) {
         clearBtn.classList.remove('hidden');
     }
-    
-    // Обновляем визуальное состояние места
-    updateSeatVisualState(placeNumber, true);
-    
-    // Переходим к следующему пассажиру
-    moveToNextPassenger();
-    
-    // Пересчитываем цену
+
+    updateSeatVisualState(placeNumber, true, targetPassengerIndex);
+
+    currentSelectedPassengerIndex = targetPassengerIndex;
+    updateSeatSelectionInfo();
     calculateTotal();
 }
 
-function updateSeatVisualState(placeNumber, isSelected) {
+function updateSeatVisualState(placeNumber, isSelected, passengerIndex) {
     const seatButton = document.querySelector(`[data-place-number="${placeNumber}"] .seat-button`);
     if (seatButton) {
         if (isSelected) {
             seatButton.classList.add('selected');
+            if (passengerIndex !== null) {
+                seatButton.setAttribute('data-passenger-index', passengerIndex);
+            }
         } else {
             seatButton.classList.remove('selected');
+            seatButton.removeAttribute('data-passenger-index');
         }
     }
 }
@@ -497,58 +532,33 @@ function clearPlace(passengerIndex) {
         clearBtn.classList.add('hidden');
     }
     
-    // Обновляем визуальное состояние места
-    updateSeatVisualState(placeNumber, false);
-    
-    // Пересчитываем цену
+    updateSeatVisualState(placeNumber, false, null);
     calculateTotal();
     updateSeatSelectionInfo();
 }
 
-function moveToNextPassenger() {
-    const passengerRows = document.querySelectorAll('.passenger-row');
-    let nextIndex = null;
-    
-    for (let i = 0; i < passengerRows.length; i++) {
-        const placeInput = passengerRows[i].querySelector('.place-input');
-        const passengerSelect = passengerRows[i].querySelector('.passenger-select');
-        
-        if (!placeInput.value && passengerSelect.value) {
-            nextIndex = i;
-            break;
-        }
-    }
-    
-    if (nextIndex !== null) {
-        currentSelectedPassengerIndex = nextIndex;
-        passengerRows[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-        currentSelectedPassengerIndex = null;
-    }
-    
-    updateSeatSelectionInfo();
-}
 
 function updateSeatSelectionInfo() {
     const info = document.getElementById('seat-selection-info');
     const passengerRows = document.querySelectorAll('.passenger-row');
     const selectedCount = selectedPlaces.size;
-    const totalCount = passengerRows.length;
+    let totalCount = 0;
     
-    if (currentSelectedPassengerIndex !== null) {
+    passengerRows.forEach(row => {
+        const passengerSelect = row.querySelector('.passenger-select');
+        if (passengerSelect && passengerSelect.value) {
+            totalCount++;
+        }
+    });
+    
+    if (selectedCount >= totalCount && totalCount > 0) {
+        info.innerHTML = `<p class="text-green-600 font-semibold">✓ Все места выбраны</p><p class="text-gray-500">Выбрано мест: ${selectedCount} из ${totalCount}</p>`;
+    } else if (currentSelectedPassengerIndex !== null) {
         const passengerSelect = document.querySelector(`[data-passenger-index="${currentSelectedPassengerIndex}"] .passenger-select`);
-        const passengerName = passengerSelect.options[passengerSelect.selectedIndex].text;
-        if (selectedCount >= totalCount) {
-            info.innerHTML = `<p class="text-green-600 font-semibold">✓ Все места выбраны для: ${passengerName}</p><p class="text-gray-500">Выбрано мест: ${selectedCount} из ${totalCount}</p>`;
-        } else {
-            info.innerHTML = `<p class="text-indigo-600 font-semibold">Выберите место для: ${passengerName}</p><p class="text-gray-500">Выбрано мест: ${selectedCount} из ${totalCount}</p>`;
-        }
+        const passengerName = passengerSelect ? passengerSelect.options[passengerSelect.selectedIndex].text : '';
+        info.innerHTML = `<p class="text-indigo-600 font-semibold">Выберите место для: ${passengerName}</p><p class="text-gray-500">Выбрано мест: ${selectedCount} из ${totalCount}</p>`;
     } else {
-        if (selectedCount >= totalCount) {
-            info.innerHTML = `<p class="text-green-600 font-semibold">✓ Все места выбраны</p><p class="text-gray-500">Выбрано мест: ${selectedCount} из ${totalCount}</p>`;
-        } else {
-            info.innerHTML = `<p>Выберите пассажира, затем кликните на место в автобусе</p><p class="text-gray-500">Выбрано мест: ${selectedCount} из ${totalCount}</p>`;
-        }
+        info.innerHTML = `<p>Выберите пассажира из списка, затем кликните на место в автобусе</p><p class="text-gray-500">Выбрано мест: ${selectedCount} из ${totalCount}</p>`;
     }
 }
 

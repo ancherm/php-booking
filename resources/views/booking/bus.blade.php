@@ -200,41 +200,44 @@
 <style>
 .bus-container {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    padding: 2rem;
-    border-radius: 1rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .bus-layout {
     display: flex;
     justify-content: space-between;
-    gap: 2rem;
-    margin: 2rem 0;
+    gap: 0.75rem;
+    margin: 1rem 0;
 }
 
 .bus-side {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 0.5rem;
 }
 
 .bus-aisle {
-    width: 60px;
+    width: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .aisle-line {
-    width: 4px;
+    width: 2px;
     height: 100%;
     background: repeating-linear-gradient(
         to bottom,
         #d1d5db 0px,
-        #d1d5db 10px,
-        transparent 10px,
-        transparent 20px
+        #d1d5db 8px,
+        transparent 8px,
+        transparent 16px
     );
 }
 
@@ -248,18 +251,21 @@
     align-items: center;
     justify-content: center;
     width: 100%;
+    min-height: 50px;
+    max-height: 60px;
     aspect-ratio: 1;
-    border: 3px solid #4b5563;
-    border-radius: 8px;
+    border: 2px solid #4b5563;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
     background: #f3f4f6;
     position: relative;
+    padding: 4px;
 }
 
 .seat-label.available:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .seat-label.window-seat {
@@ -282,7 +288,7 @@
 .seat-label:has(input:checked) {
     background: #fef3c7;
     border-color: #f59e0b;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
 }
 
 .seat-radio {
@@ -293,29 +299,49 @@
 
 .seat-number {
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 0.75rem;
     color: #1f2937;
+    line-height: 1;
 }
 
 .seat-icon {
-    font-size: 0.8rem;
-    margin-top: 2px;
+    font-size: 0.65rem;
+    margin-top: 1px;
+    line-height: 1;
 }
 
 @media (max-width: 768px) {
+    .bus-container {
+        padding: 0.75rem;
+        max-height: 70vh;
+    }
+    
     .bus-layout {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.5rem;
     }
     
     .bus-aisle {
         width: 100%;
-        height: 20px;
+        height: 15px;
     }
     
     .aisle-line {
         width: 100%;
-        height: 4px;
+        height: 2px;
+    }
+    
+    .seat-label {
+        min-height: 45px;
+        max-height: 55px;
+    }
+    
+    .seat-number {
+        font-size: 0.7rem;
+    }
+    
+    .seat-icon {
+        font-size: 0.6rem;
     }
 }
 </style>

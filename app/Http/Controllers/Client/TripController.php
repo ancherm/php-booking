@@ -11,11 +11,20 @@ class TripController extends Controller
 {
     public function index(Request $request)
     {
+        $now = now();
         $query = Trip::with(['route.bus'])
             ->whereHas('route', function($q) {
                 $q->where('approved', true);
             })
-            ->where('date', '>=', now()->toDateString())
+            ->where(function($q) use ($now) {
+                $q->where('date', '>', $now->toDateString())
+                  ->orWhere(function($q2) use ($now) {
+                      $q2->whereDate('date', $now->toDateString())
+                         ->whereHas('route', function($q3) use ($now) {
+                             $q3->whereTime('start', '>', $now->toTimeString());
+                         });
+                  });
+            })
             ->where('free_places', '>', 0);
 
         if ($request->filled('from_station')) {

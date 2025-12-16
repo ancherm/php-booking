@@ -93,10 +93,8 @@ class OrderController extends Controller
                 $place->passenger_id = $passenger->id;
                 $place->save();
 
-                // Calculate price for this passenger
                 $passengerPrice = $basePrice;
                 
-                // Window seat (positions 1 and 4 in each row - edges) - +200
                 $placeNumber = (int)$passengerData['place_number'];
                 $seatsPerRow = 4;
                 $positionInRow = (($placeNumber - 1) % $seatsPerRow) + 1;
@@ -104,14 +102,12 @@ class OrderController extends Controller
                     $passengerPrice += 200;
                 }
                 
-                // Pet option - +300
                 $withPet = isset($passengerData['with_pet']) && $passengerData['with_pet'] == '1';
                 if ($withPet) {
                     $passengerPrice += 300;
                     $orderWithPet = true;
                 }
                 
-                // Weekend multiplier
                 $passengerPrice *= $weekendMultiplier;
                 $passengerPrice = round($passengerPrice, 2);
                 
@@ -126,7 +122,6 @@ class OrderController extends Controller
                 ]);
             }
 
-            // Update order with total price
             $order->total_price = round($totalPrice, 2);
             $order->with_pet = $orderWithPet;
             $order->save();
@@ -163,13 +158,11 @@ class OrderController extends Controller
             abort(403);
         }
 
-        // Проверяем, не истекла ли резервация
         if ($order->isExpired()) {
             $order->update(['status' => 'expired']);
             return redirect()->route('client.orders.index')->with('error', 'Время резервирования истекло. Заказ отменен.');
         }
 
-        // Если уже оплачен, перенаправляем на страницу заказа
         if ($order->status === 'paid') {
             return redirect()->route('client.orders.show', $order)->with('info', 'Заказ уже оплачен');
         }
@@ -187,20 +180,16 @@ class OrderController extends Controller
             abort(403);
         }
 
-        // Проверяем, не истекла ли резервация
         if ($order->isExpired()) {
             $order->update(['status' => 'expired']);
             return redirect()->route('client.orders.index')->with('error', 'Время резервирования истекло. Заказ отменен.');
         }
 
-        // Если уже оплачен
         if ($order->status === 'paid') {
             return redirect()->route('client.orders.show', $order)->with('info', 'Заказ уже оплачен');
         }
 
-        // 25% шанс отказа (0.25 вероятность)
         if (rand(1, 4) === 1) {
-            // Заказ остается забронированным, можно попробовать снова
             return back()->with('error', 'Оплата не прошла. Попробуйте снова. У вас есть время до ' . $order->reserved_until->format('H:i'));
         }
 

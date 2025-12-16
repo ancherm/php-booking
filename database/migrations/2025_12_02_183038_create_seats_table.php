@@ -14,7 +14,7 @@ return new class extends Migration
         if (!Schema::hasTable('seats')) {
             Schema::create('seats', function (Blueprint $table) {
                 $table->id();
-                $table->unsignedInteger('bus_id');
+                $table->integer('bus_id');
                 $table->integer('number');
                 $table->boolean('is_window')->default(false);
                 $table->boolean('allows_pet')->default(false);

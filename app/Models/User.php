@@ -93,6 +93,11 @@ class User extends Authenticatable
         return $this->hasOne(Client::class, 'id');
     }
 
+    public function manager()
+    {
+        return $this->hasOne(Manager::class, 'id');
+    }
+
 
     public function getAuthIdentifierName()
     {

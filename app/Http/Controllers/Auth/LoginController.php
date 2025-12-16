@@ -19,22 +19,27 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (auth()->attempt($credentials)) {
-            $request->session()->regenerate();
+        $user = \App\Models\User::where('login', $credentials['login'])->first();
 
-            $user = auth()->user();
-
+        if ($user && \Hash::check($credentials['password'], $user->password)) {
             if ($user->disabled) {
-                auth()->logout();
                 return back()->with('error', 'Ваш аккаунт заблокирован');
             }
 
-            return match($user->user_type) {
-                'admin' => redirect()->route('admin.dashboard'),
-                'manager' => redirect()->route('manager.dashboard'),
-                'client' => redirect()->route('client.dashboard'),
-                default => redirect()->route('home'),
-            };
+            try {
+                auth()->login($user);
+                $request->session()->regenerate();
+
+                return match($user->user_type) {
+                    'admin' => redirect()->route('admin.dashboard'),
+                    'manager' => redirect()->route('manager.dashboard'),
+                    'client' => redirect()->route('client.dashboard'),
+                    default => redirect()->route('home'),
+                };
+            } catch (\Exception $e) {
+                \Log::error('Login error: ' . $e->getMessage());
+                return back()->with('error', 'Ошибка при входе в систему. Попробуйте позже.');
+            }
         }
 
         return back()->with('error', 'Неверный логин или пароль');

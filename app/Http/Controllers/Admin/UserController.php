@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Admin;
 use App\Models\Client;
+use App\Models\Manager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -75,6 +76,11 @@ class UserController extends Controller
                 Admin::create([
                     'id' => $user->id,
                     'position' => $validated['position'],
+                ]);
+            } elseif ($validated['user_type'] === 'manager') {
+                Manager::create([
+                    'id' => $user->id,
+                    'department' => null,
                 ]);
             }
 

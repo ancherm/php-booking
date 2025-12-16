@@ -26,7 +26,6 @@ class Seat extends Model
             $query->where('travel_date', $travelDate);
         }
         
-        // Проверяем, не истекла ли резервация
         $query->where(function($q) {
             $q->where('status', 'paid')
               ->orWhere(function($q2) {

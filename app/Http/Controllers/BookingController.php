@@ -29,31 +29,26 @@ class BookingController extends Controller
         $route = Route::findOrFail($request->route_id);
         $travelDate = Carbon::parse($request->date);
 
-        // Проверяем, не занято ли место на эту дату
         if ($seat->isBooked($travelDate->format('Y-m-d'))) {
             return back()->with('error', 'Это место уже занято на выбранную дату.');
         }
 
-        $price = $route->price; // base_price
+        $price = $route->price;
 
-        // Место у окна дороже (каждое четное место)
         if ($seat->is_window) {
             $price += 200;
         }
 
-        // Животное с доплатой
         $with_pet = $request->has('with_pet');
         if ($with_pet) {
             $price += 300;
         }
 
-        // По выходным цена больше (суббота = 6, воскресенье = 0)
         $dayOfWeek = $travelDate->dayOfWeek;
         if ($dayOfWeek == 0 || $dayOfWeek == 6) {
             $price *= 1.15;
         }
 
-        // Резервируем место на 15 минут
         $reservedUntil = Carbon::now()->addMinutes(15);
 
         $ticket = Ticket::create([

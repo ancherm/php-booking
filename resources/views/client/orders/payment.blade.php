@@ -168,11 +168,12 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Срок действия</label>
-                        <input type="text" name="expiry" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="MM/YY" maxlength="5" pattern="[0-9]{2}/[0-9]{2}">
+                        <input type="text" name="expiry" id="expiry" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="MM/YY" maxlength="5" pattern="[0-9]{2}/[0-9]{2}" required>
+                        <p class="text-xs text-red-500 mt-1 hidden" id="expiry-error">Срок действия карты истек</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
-                        <input type="text" name="cvv" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="123" maxlength="3" pattern="[0-9]{3}">
+                        <input type="text" name="cvv" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="123" maxlength="3" pattern="[0-9]{3}" required>
                     </div>
                 </div>
             </div>
@@ -187,6 +188,145 @@
         <a href="{{ route('client.orders.index') }}" class="text-sm text-gray-600 hover:text-gray-900">Вернуться к заказам</a>
     </div>
 </div>
+
+<script>
+(function() {
+    'use strict';
+    
+    function initExpiryInput() {
+        const expiryInput = document.getElementById('expiry');
+        const expiryError = document.getElementById('expiry-error');
+        
+        if (!expiryInput) {
+            return;
+        }
+        
+        expiryInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            
+            if (e.target.value !== value) {
+                const cursorPos = e.target.selectionStart;
+                e.target.value = value;
+                
+                if (value.length === 3 && cursorPos === 2) {
+                    e.target.setSelectionRange(3, 3);
+                } else if (cursorPos > value.length) {
+                    e.target.setSelectionRange(value.length, value.length);
+                }
+            }
+            
+            validateExpiryDate(value, expiryInput, expiryError);
+        });
+        
+        expiryInput.addEventListener('blur', function(e) {
+            validateExpiryDate(e.target.value, expiryInput, expiryError);
+        });
+        
+        function validateExpiryDate(value, input, errorElement) {
+            if (errorElement) {
+                errorElement.classList.add('hidden');
+            }
+            input.classList.remove('border-red-500');
+            
+            if (!value || value.length === 0) {
+                return;
+            }
+            
+            if (value.length < 5) {
+                return;
+            }
+            
+            const [month, year] = value.split('/');
+            const expiryMonth = parseInt(month, 10);
+            const expiryYear = 2000 + parseInt(year, 10);
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1;
+            
+            if (isNaN(expiryMonth) || expiryMonth < 1 || expiryMonth > 12) {
+                if (errorElement) {
+                    errorElement.textContent = 'Неверный месяц (должен быть от 01 до 12)';
+                    errorElement.classList.remove('hidden');
+                }
+                input.classList.add('border-red-500');
+                return false;
+            }
+            
+            if (isNaN(expiryYear) || expiryYear < 2000 || expiryYear > 2100) {
+                if (errorElement) {
+                    errorElement.textContent = 'Неверный год';
+                    errorElement.classList.remove('hidden');
+                }
+                input.classList.add('border-red-500');
+                return false;
+            }
+            
+            if (expiryYear < currentYear || (expiryYear === currentYear && expiryMonth < currentMonth)) {
+                if (errorElement) {
+                    errorElement.textContent = 'Срок действия карты истек';
+                    errorElement.classList.remove('hidden');
+                }
+                input.classList.add('border-red-500');
+                return false;
+            }
+            
+            if (errorElement) {
+                errorElement.classList.add('hidden');
+            }
+            input.classList.remove('border-red-500');
+            return true;
+        }
+        
+        expiryInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && this.value.length === 3 && this.value.charAt(2) === '/') {
+                this.value = this.value.substring(0, 2);
+                e.preventDefault();
+            }
+        });
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initExpiryInput);
+    } else {
+        initExpiryInput();
+    }
+    
+    const paymentForm = document.getElementById('paymentForm');
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', function(e) {
+            const expiryInput = document.getElementById('expiry');
+            const expiryError = document.getElementById('expiry-error');
+            
+            if (!expiryInput) {
+                return;
+            }
+            
+            const expiryValue = expiryInput.value;
+            
+            if (expiryValue.length !== 5 || !expiryValue.includes('/')) {
+                e.preventDefault();
+                if (expiryError) {
+                    expiryError.textContent = 'Введите срок действия в формате MM/YY';
+                    expiryError.classList.remove('hidden');
+                }
+                expiryInput.classList.add('border-red-500');
+                expiryInput.focus();
+                return false;
+            }
+            
+            if (!validateExpiryDate(expiryValue, expiryInput, expiryError)) {
+                e.preventDefault();
+                expiryInput.focus();
+                return false;
+            }
+        });
+    }
+})();
+});
 
 @if($order->reserved_until)
 <script>

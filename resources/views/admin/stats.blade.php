@@ -79,8 +79,8 @@
                     @forelse($routeStats as $stat)
                         @php
                             $route = $routes[$stat->route_id] ?? null;
-                            $maxTickets = $routeStats->max('paid_tickets');
-                            $popularityPercent = $maxTickets > 0 ? ($stat->paid_tickets / $maxTickets) * 100 : 0;
+                            $maxTickets = $routeStats->max('paid_orders');
+                            $popularityPercent = $maxTickets > 0 ? ($stat->paid_orders / $maxTickets) * 100 : 0;
                         @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -97,13 +97,13 @@
                                 {{ $route && $route->bus ? $route->bus->name : 'Не указан' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $stat->total_tickets }}
+                                {{ $stat->total_orders }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-green-600">{{ $stat->paid_tickets }}</span>
+                                <span class="text-sm font-medium text-green-600">{{ $stat->paid_orders }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-yellow-600">{{ $stat->pending_tickets }}</span>
+                                <span class="text-sm font-medium text-yellow-600">{{ $stat->pending_orders }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
                                 {{ number_format($stat->total_revenue, 2) }} ₽

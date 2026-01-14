@@ -5,7 +5,7 @@
 @section('content')
 <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-6">
     <h2 class="text-2xl font-bold text-gray-900 mb-6">Выбор места: {{ $route->from_station }} → {{ $route->to_station }}</h2>
-    
+
     <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Дата поездки:</label>
         <input type="date" id="travelDate" value="{{ $travelDate }}" class="border border-gray-300 rounded-md px-3 py-2" min="{{ \Carbon\Carbon::today()->format('Y-m-d') }}">
@@ -46,7 +46,7 @@
             <!-- Кабина водителя -->
             <div class="text-center mb-4">
                 <div class="inline-block bg-gray-800 text-white px-6 py-2 rounded-t-lg">
-                    <span class="text-sm">🚌 Кабина водителя</span>
+                    <span class="text-sm">Кабина водителя</span>
                 </div>
             </div>
 
@@ -61,14 +61,14 @@
                             return $seat->number % 4 == 1 || ($seat->number % 4 == 2 && $seat->number <= $seats->count() / 2);
                         })->sortBy('number');
                     @endphp
-                    
+
                     @foreach($leftSeats as $seat)
                         @php
                             $isBooked = $seat->isBooked($travelDate);
                             $row = ceil($seat->number / 4);
                         @endphp
                         <div class="seat-wrapper" data-seat-id="{{ $seat->id }}" data-seat-number="{{ $seat->number }}" data-is-window="{{ $seat->is_window ? '1' : '0' }}" data-allows-pet="{{ $seat->allows_pet ? '1' : '0' }}">
-                            <label class="seat-label 
+                            <label class="seat-label
                                 {{ $seat->is_window ? 'window-seat' : '' }}
                                 {{ $seat->allows_pet ? 'pet-seat' : '' }}
                                 {{ $isBooked ? 'booked' : 'available' }}
@@ -101,13 +101,13 @@
                             return !$leftSeats->contains('id', $seat->id);
                         })->sortBy('number');
                     @endphp
-                    
+
                     @foreach($rightSeats as $seat)
                         @php
                             $isBooked = $seat->isBooked($travelDate);
                         @endphp
                         <div class="seat-wrapper" data-seat-id="{{ $seat->id }}" data-seat-number="{{ $seat->number }}" data-is-window="{{ $seat->is_window ? '1' : '0' }}" data-allows-pet="{{ $seat->allows_pet ? '1' : '0' }}">
-                            <label class="seat-label 
+                            <label class="seat-label
                                 {{ $seat->is_window ? 'window-seat' : '' }}
                                 {{ $seat->allows_pet ? 'pet-seat' : '' }}
                                 {{ $isBooked ? 'booked' : 'available' }}
@@ -315,31 +315,31 @@
         padding: 0.75rem;
         max-height: 70vh;
     }
-    
+
     .bus-layout {
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     .bus-aisle {
         width: 100%;
         height: 15px;
     }
-    
+
     .aisle-line {
         width: 100%;
         height: 2px;
     }
-    
+
     .seat-label {
         min-height: 45px;
         max-height: 55px;
     }
-    
+
     .seat-number {
         font-size: 0.7rem;
     }
-    
+
     .seat-icon {
         font-size: 0.6rem;
     }
@@ -357,21 +357,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const basePrice = {{ $route->price }};
     const windowPrice = 200;
     const petPrice = 300;
-    
+
     // Обновление даты в форме
     travelDateInput.addEventListener('change', function() {
         formDateInput.value = this.value;
         // Перезагружаем страницу с новой датой
         window.location.href = '{{ route("route.bus", $route->id) }}?date=' + this.value;
     });
-    
+
     // Обработка выбора места
     seatRadios.forEach(radio => {
         radio.addEventListener('change', function() {
             updatePrice();
             submitBtn.disabled = false;
             document.getElementById('selectedSeatId').value = this.value;
-            
+
             // Обновляем визуальное выделение
             document.querySelectorAll('.seat-label').forEach(label => {
                 label.classList.remove('selected');
@@ -379,28 +379,28 @@ document.addEventListener('DOMContentLoaded', function() {
             this.closest('.seat-label').classList.add('selected');
         });
     });
-    
+
     // Обновление цены при изменении опций
     document.getElementById('withPet').addEventListener('change', updatePrice);
-    
+
     function updatePrice() {
         const selectedSeat = document.querySelector('.seat-radio:checked');
         if (!selectedSeat) {
             priceInfo.classList.add('hidden');
             return;
         }
-        
+
         priceInfo.classList.remove('hidden');
-        
+
         const seatWrapper = selectedSeat.closest('.seat-wrapper');
         const isWindow = seatWrapper.dataset.isWindow === '1';
         const withPet = document.getElementById('withPet').checked;
         const travelDate = new Date(travelDateInput.value);
         const dayOfWeek = travelDate.getDay(); // 0 = воскресенье, 6 = суббота
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        
+
         let totalPrice = basePrice;
-        
+
         // Место у окна
         if (isWindow) {
             totalPrice += windowPrice;
@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             document.getElementById('windowPrice').classList.add('hidden');
         }
-        
+
         // Животное
         if (withPet) {
             totalPrice += petPrice;
@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             document.getElementById('petPrice').classList.add('hidden');
         }
-        
+
         // Выходные
         if (isWeekend) {
             const weekendIncrease = totalPrice * 0.15;
@@ -426,10 +426,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             document.getElementById('weekendPrice').classList.add('hidden');
         }
-        
+
         document.getElementById('totalPrice').textContent = totalPrice.toFixed(2);
     }
-    
+
     // Обновление формы при отправке
     form.addEventListener('submit', function(e) {
         const selectedSeat = document.querySelector('.seat-radio:checked');
@@ -438,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Пожалуйста, выберите место');
             return;
         }
-        
+
         // Устанавливаем правильный action формы
         form.action = '{{ url("/seat") }}/' + selectedSeat.value + '/reserve';
     });

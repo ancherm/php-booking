@@ -20,3 +20,4 @@ class Manager extends Model
     }
 }
 
+

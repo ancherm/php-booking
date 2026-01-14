@@ -77,7 +77,7 @@
     <!-- Схема автобуса -->
     <div class="bg-white shadow rounded-lg p-6 mb-6">
         <h2 class="text-xl font-semibold mb-4">Выберите места в автобусе</h2>
-        
+
         <!-- Легенда -->
         <div class="mb-6 flex flex-wrap gap-4 justify-center p-4 bg-gray-50 rounded-lg">
             <div class="flex items-center gap-2">
@@ -103,7 +103,7 @@
             <!-- Кабина водителя -->
             <div class="text-center mb-4">
                 <div class="inline-block bg-gray-800 text-white px-6 py-2 rounded-t-lg">
-                    <span class="text-sm">🚌 Кабина водителя</span>
+                    <span class="text-sm">Кабина водителя</span>
                 </div>
             </div>
 
@@ -114,17 +114,17 @@
                     $occupiedPlaces = $trip->places()->whereNotNull('passenger_id')->pluck('number_place')->toArray();
                     $seatsPerRow = 4; // 2+2 конфигурация
                     $totalRows = ceil($totalPlaces / $seatsPerRow);
-                    
+
                     // Распределение мест: в каждом ряду 4 места
                     // Левая сторона (окна): места 1, 2, 5, 6, 9, 10... (нечетные ряды: 1,2; четные ряды: 5,6...)
                     // Правая сторона (проход): места 3, 4, 7, 8, 11, 12...
                     $leftSidePlaces = [];
                     $rightSidePlaces = [];
-                    
+
                     for ($i = 1; $i <= $totalPlaces; $i++) {
                         $row = ceil($i / $seatsPerRow);
                         $positionInRow = (($i - 1) % $seatsPerRow) + 1;
-                        
+
                         // В каждом ряду: позиции 1,2 - левая сторона, позиции 3,4 - правая сторона
                         if ($positionInRow <= 2) {
                             $leftSidePlaces[] = $i;
@@ -142,11 +142,11 @@
                             $positionInRow = (($placeNum - 1) % $seatsPerRow) + 1;
                             $isWindow = ($positionInRow == 1); // Позиция 1 в ряду - левый край (окно)
                         @endphp
-                        <div class="seat-wrapper" 
-                             data-place-number="{{ $placeNum }}" 
+                        <div class="seat-wrapper"
+                             data-place-number="{{ $placeNum }}"
                              data-is-window="{{ $isWindow ? '1' : '0' }}"
                              data-is-occupied="{{ $isOccupied ? '1' : '0' }}">
-                            <button type="button" 
+                            <button type="button"
                                     class="seat-button {{ $isWindow ? 'window-seat' : '' }} {{ $isOccupied ? 'booked' : 'available' }}"
                                     data-place-number="{{ $placeNum }}"
                                     {{ $isOccupied ? 'disabled' : '' }}>
@@ -172,11 +172,11 @@
                             $positionInRow = (($placeNum - 1) % $seatsPerRow) + 1;
                             $isWindow = ($positionInRow == $seatsPerRow); // Позиция 4 в ряду - правый край (окно)
                         @endphp
-                        <div class="seat-wrapper" 
-                             data-place-number="{{ $placeNum }}" 
+                        <div class="seat-wrapper"
+                             data-place-number="{{ $placeNum }}"
                              data-is-window="{{ $isWindow ? '1' : '0' }}"
                              data-is-occupied="{{ $isOccupied ? '1' : '0' }}">
-                            <button type="button" 
+                            <button type="button"
                                     class="seat-button {{ $isWindow ? 'window-seat' : '' }} {{ $isOccupied ? 'booked' : 'available' }}"
                                     data-place-number="{{ $placeNum }}"
                                     {{ $isOccupied ? 'disabled' : '' }}>
@@ -196,10 +196,6 @@
                     <span class="text-sm text-gray-600">Задняя часть</span>
                 </div>
             </div>
-        </div>
-
-        <div class="mt-4 text-center text-sm text-gray-600" id="seat-selection-info">
-            <p>Выберите пассажира из списка, затем кликните на место в автобусе. Можно выбрать место для любого пассажира в любой момент.</p>
         </div>
     </div>
 
@@ -357,31 +353,31 @@
         padding: 0.75rem;
         max-height: 70vh;
     }
-    
+
     .bus-layout {
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     .bus-aisle {
         width: 100%;
         height: 15px;
     }
-    
+
     .aisle-line {
         width: 100%;
         height: 2px;
     }
-    
+
     .seat-button {
         min-height: 45px;
         max-height: 55px;
     }
-    
+
     .seat-number {
         font-size: 0.7rem;
     }
-    
+
     .seat-icon {
         font-size: 0.6rem;
     }
@@ -514,24 +510,24 @@ function clearPlace(passengerIndex) {
     if (!placeInput || !placeInput.value) {
         return;
     }
-    
+
     const placeNumber = parseInt(placeInput.value);
     selectedPlaces.delete(placeNumber);
     placeInput.value = '';
-    
+
     // Обновляем отображение
     const placeDisplay = document.getElementById(`selected-place-${passengerIndex}`);
     if (placeDisplay) {
         placeDisplay.textContent = 'Не выбрано';
         placeDisplay.classList.remove('has-place');
     }
-    
+
     // Скрываем кнопку очистки
     const clearBtn = document.getElementById(`clear-place-${passengerIndex}`);
     if (clearBtn) {
         clearBtn.classList.add('hidden');
     }
-    
+
     updateSeatVisualState(placeNumber, false, null);
     calculateTotal();
     updateSeatSelectionInfo();
@@ -543,14 +539,14 @@ function updateSeatSelectionInfo() {
     const passengerRows = document.querySelectorAll('.passenger-row');
     const selectedCount = selectedPlaces.size;
     let totalCount = 0;
-    
+
     passengerRows.forEach(row => {
         const passengerSelect = row.querySelector('.passenger-select');
         if (passengerSelect && passengerSelect.value) {
             totalCount++;
         }
     });
-    
+
     if (selectedCount >= totalCount && totalCount > 0) {
         info.innerHTML = `<p class="text-green-600 font-semibold">✓ Все места выбраны</p><p class="text-gray-500">Выбрано мест: ${selectedCount} из ${totalCount}</p>`;
     } else if (currentSelectedPassengerIndex !== null) {
@@ -566,7 +562,7 @@ function addPassenger() {
     const container = document.getElementById('passenger-container');
     const newRow = document.querySelector('.passenger-row').cloneNode(true);
     newRow.setAttribute('data-passenger-index', passengerIndex);
-    
+
     newRow.querySelectorAll('select, input, label').forEach(element => {
         if (element.name) {
             element.name = element.name.replace('[0]', `[${passengerIndex}]`);
@@ -589,13 +585,13 @@ function addPassenger() {
             element.checked = false;
         }
     });
-    
+
     // Обновляем отображение места
     const placeDisplay = newRow.querySelector('.selected-place-display');
     placeDisplay.id = `selected-place-${passengerIndex}`;
     placeDisplay.textContent = 'Не выбрано';
     placeDisplay.classList.remove('has-place');
-    
+
     // Обновляем кнопку очистки
     const clearBtn = newRow.querySelector('.clear-place-btn');
     if (clearBtn) {
@@ -603,19 +599,19 @@ function addPassenger() {
         clearBtn.onclick = () => clearPlace(passengerIndex);
         clearBtn.classList.add('hidden');
     }
-    
+
     // Обновляем обработчик выбора пассажира
     const passengerSelect = newRow.querySelector('.passenger-select');
     if (passengerSelect) {
         passengerSelect.onchange = () => onPassengerChange(passengerIndex);
     }
-    
+
     // Update price display
     const priceSpan = newRow.querySelector('.passenger-price span');
     if (priceSpan) {
         priceSpan.textContent = basePrice.toFixed(2);
     }
-    
+
     container.appendChild(newRow);
     passengerIndex++;
     calculateTotal();
@@ -625,47 +621,47 @@ function addPassenger() {
 function calculateTotal() {
     let total = 0;
     const rows = document.querySelectorAll('.passenger-row');
-    
+
     rows.forEach((row, index) => {
         const placeInput = row.querySelector('.place-input');
         const petCheckbox = row.querySelector('.pet-checkbox');
         const priceDisplay = row.querySelector('.passenger-price span');
-        
+
         if (!placeInput || !placeInput.value) {
             if (priceDisplay) {
                 priceDisplay.textContent = basePrice.toFixed(2);
             }
             return;
         }
-        
+
         const placeNumber = parseInt(placeInput.value);
         let price = basePrice;
-        
+
         // Window seat (positions 1 and 4 in each row - edges)
         const seatWrapper = document.querySelector(`[data-place-number="${placeNumber}"]`);
         if (seatWrapper && seatWrapper.dataset.isWindow === '1') {
             price += windowSeatPrice;
         }
-        
+
         // Pet option
         if (petCheckbox && petCheckbox.checked) {
             price += petPrice;
         }
-        
+
         // Weekend multiplier
         if (isWeekend) {
             price *= weekendMultiplier;
         }
-        
+
         price = Math.round(price * 100) / 100;
-        
+
         if (priceDisplay) {
             priceDisplay.textContent = price.toFixed(2);
         }
-        
+
         total += price;
     });
-    
+
     document.getElementById('total-price').textContent = total.toFixed(2) + ' ₽';
 }
 
@@ -674,28 +670,28 @@ document.querySelector('form').addEventListener('submit', function(e) {
     const rows = document.querySelectorAll('.passenger-row');
     let hasErrors = false;
     const errors = [];
-    
+
     rows.forEach((row, index) => {
         const passengerSelect = row.querySelector('.passenger-select');
         const placeInput = row.querySelector('.place-input');
-        
+
         if (!passengerSelect.value) {
             hasErrors = true;
             errors.push(`Пассажир #${index + 1} не выбран`);
         }
-        
+
         if (!placeInput.value) {
             hasErrors = true;
             errors.push(`Место для пассажира #${index + 1} не выбрано`);
         }
     });
-    
+
     if (hasErrors) {
         e.preventDefault();
         alert('Ошибки:\n' + errors.join('\n'));
         return false;
     }
-    
+
     // Проверка на дубликаты мест
     const selectedPlacesArray = Array.from(selectedPlaces);
     if (selectedPlacesArray.length !== new Set(selectedPlacesArray).size) {
@@ -703,7 +699,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
         alert('Ошибка: одно и то же место выбрано для нескольких пассажиров');
         return false;
     }
-    
+
     return true;
 });
 </script>

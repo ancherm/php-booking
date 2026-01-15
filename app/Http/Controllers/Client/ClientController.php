@@ -55,8 +55,19 @@ class ClientController extends Controller
                 'passport' => $passport,
             ]);
 
+            // Если передан trip_id, возвращаемся на страницу создания заказа
+            if ($request->has('trip_id')) {
+                return redirect()->route('client.orders.create', ['trip' => $request->trip_id])
+                    ->with('success', 'Пассажир успешно добавлен. Теперь вы можете выбрать его для бронирования.');
+            }
+
             return redirect()->route('client.passengers.index')->with('success', 'Пассажир успешно добавлен');
         } catch (\Exception $e) {
+            if ($request->has('trip_id')) {
+                return redirect()->route('client.orders.create', ['trip' => $request->trip_id])
+                    ->with('error', 'Ошибка при добавлении пассажира: ' . $e->getMessage())
+                    ->withInput();
+            }
             return back()->with('error', 'Ошибка при добавлении пассажира: ' . $e->getMessage())->withInput();
         }
     }

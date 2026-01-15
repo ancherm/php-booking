@@ -40,7 +40,13 @@ class OrderController extends Controller
             }
         }
 
-        return view('client.orders.create', compact('trip', 'passengers', 'availablePlaces'));
+        // Получаем ID пассажиров, которые уже имеют оплаченные заказы на этот рейс
+        $paidPassengerIds = OrderPassenger::whereHas('order', function($query) use ($trip) {
+            $query->where('trip_id', $trip->id)
+                  ->where('status', 'paid');
+        })->pluck('passenger_id')->toArray();
+
+        return view('client.orders.create', compact('trip', 'passengers', 'availablePlaces', 'paidPassengerIds'));
     }
 
     public function store(Request $request)
@@ -59,6 +65,19 @@ class OrderController extends Controller
 
         if (!$trip->hasAvailablePlaces(count($validated['passengers']))) {
             return back()->with('error', 'Недостаточно свободных мест')->withInput();
+        }
+
+        // Проверяем, что пассажиры не имеют уже оплаченных заказов на этот рейс
+        $paidPassengerIds = OrderPassenger::whereHas('order', function($query) use ($trip) {
+            $query->where('trip_id', $trip->id)
+                  ->where('status', 'paid');
+        })->pluck('passenger_id')->toArray();
+
+        foreach ($validated['passengers'] as $passengerData) {
+            if (in_array($passengerData['passenger_id'], $paidPassengerIds)) {
+                $passenger = $client->passengers()->findOrFail($passengerData['passenger_id']);
+                return back()->with('error', 'Пассажир ' . $passenger->full_name . ' уже имеет оплаченный билет на этот рейс')->withInput();
+            }
         }
 
         try {

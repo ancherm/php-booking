@@ -21,3 +21,4 @@ class Manager extends Model
 }
 
 
+

@@ -534,6 +534,7 @@
             this.passengerCount = 0;
             this.currentActivePassenger = null;
             this.selectedPlaces = new Set();
+            this.selectedPassengerIds = new Set(); // Отслеживание выбранных пассажиров
             this.basePrice = {{ $trip->route->price }};
             this.isWeekend = {{ ($trip->date->dayOfWeek == 0 || $trip->date->dayOfWeek == 6) ? 'true' : 'false' }};
             this.weekendMultiplier = 1.15;
@@ -629,6 +630,9 @@
                 this.setActivePassenger(newRow);
             }
 
+            // Обновляем опции в селектах
+            this.updatePassengerSelectOptions();
+
             // Обновляем UI
             this.updateRemoveButtons();
             this.calculateTotal();
@@ -676,13 +680,45 @@
         onPassengerSelectChange(event) {
             const passengerRow = event.target.closest('.passenger-row');
             const passengerId = parseInt(event.target.value);
+            const oldPassengerId = parseInt(passengerRow.dataset.selectedPassengerId || 0);
+
+            // Удаляем старый ID из списка выбранных
+            if (oldPassengerId && oldPassengerId !== passengerId) {
+                this.selectedPassengerIds.delete(oldPassengerId);
+            }
+
+            // Если выбран пустой вариант
+            if (!passengerId) {
+                delete passengerRow.dataset.selectedPassengerId;
+                this.updatePassengerSelectOptions();
+                this.calculateTotal();
+                return;
+            }
 
             // Проверяем, не оплачен ли пассажир
             if (this.paidPassengerIds.includes(passengerId)) {
                 alert('Этот пассажир уже имеет оплаченный билет на этот рейс');
                 event.target.value = '';
+                delete passengerRow.dataset.selectedPassengerId;
+                this.updatePassengerSelectOptions();
                 return;
             }
+
+            // Проверяем, не выбран ли уже этот пассажир в другом поле
+            if (this.selectedPassengerIds.has(passengerId)) {
+                alert('Этот пассажир уже выбран в другом поле. Выберите другого пассажира.');
+                event.target.value = '';
+                delete passengerRow.dataset.selectedPassengerId;
+                this.updatePassengerSelectOptions();
+                return;
+            }
+
+            // Добавляем ID в список выбранных
+            this.selectedPassengerIds.add(passengerId);
+            passengerRow.dataset.selectedPassengerId = passengerId;
+
+            // Обновляем опции во всех селектах
+            this.updatePassengerSelectOptions();
 
             // Если у пассажира уже есть выбранное место, выделяем его
             const placeInput = passengerRow.querySelector('.place-input');
@@ -804,6 +840,12 @@
                 return;
             }
 
+            // Удаляем ID пассажира из списка выбранных
+            const passengerId = parseInt(passengerRow.dataset.selectedPassengerId || 0);
+            if (passengerId) {
+                this.selectedPassengerIds.delete(passengerId);
+            }
+
             // Очищаем место, если было
             this.clearPlace(passengerRow);
 
@@ -817,6 +859,9 @@
 
             // Удаляем строку
             passengerRow.remove();
+
+            // Обновляем опции в селектах
+            this.updatePassengerSelectOptions();
 
             // Обновляем UI
             this.updateRemoveButtons();
@@ -832,6 +877,32 @@
                 if (removeBtn) {
                     removeBtn.style.display = canRemove ? 'block' : 'none';
                 }
+            });
+        }
+
+        updatePassengerSelectOptions() {
+            // Обновляем опции во всех селектах пассажиров
+            document.querySelectorAll('.passenger-select').forEach(select => {
+                const currentRow = select.closest('.passenger-row');
+                const currentSelectedId = parseInt(currentRow.dataset.selectedPassengerId || 0);
+                
+                Array.from(select.options).forEach(option => {
+                    const optionValue = parseInt(option.value);
+                    if (!optionValue) return; // Пропускаем пустую опцию
+                    
+                    // Если это текущий выбранный пассажир в этом селекте, не блокируем
+                    if (optionValue === currentSelectedId) {
+                        option.disabled = false;
+                        return;
+                    }
+                    
+                    // Если пассажир уже выбран в другом селекте или оплачен, блокируем
+                    if (this.selectedPassengerIds.has(optionValue) || this.paidPassengerIds.includes(optionValue)) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
             });
         }
 

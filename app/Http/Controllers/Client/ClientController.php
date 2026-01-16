@@ -15,7 +15,7 @@ class ClientController extends Controller
         $user = auth()->user();
         $client = $user->client;
         $recentOrders = $client->orders()->with(['trip.route.bus'])->latest()->take(5)->get();
-        
+
         return view('client.dashboard', compact('recentOrders'));
     }
 
@@ -24,7 +24,7 @@ class ClientController extends Controller
         $user = auth()->user();
         $client = $user->client;
         $passengers = $client->passengers;
-        
+
         return view('client.passengers', compact('passengers'));
     }
 
@@ -47,7 +47,7 @@ class ClientController extends Controller
 
         try {
             $passport = preg_replace('/^(\d{4})(\d{6})$/', '$1 $2', $validated['passport']);
-            
+
             $passenger = Passenger::create([
                 'client_id' => $client->id,
                 'first_name' => $validated['first_name'],
@@ -55,7 +55,6 @@ class ClientController extends Controller
                 'passport' => $passport,
             ]);
 
-            // Если передан trip_id, возвращаемся на страницу создания заказа
             if ($request->has('trip_id')) {
                 return redirect()->route('client.orders.create', ['trip' => $request->trip_id])
                     ->with('success', 'Пассажир успешно добавлен. Теперь вы можете выбрать его для бронирования.');
@@ -76,7 +75,7 @@ class ClientController extends Controller
     {
         $user = auth()->user();
         $client = $user->client;
-        
+
         if ($passenger->client_id !== $client->id) {
             abort(403);
         }

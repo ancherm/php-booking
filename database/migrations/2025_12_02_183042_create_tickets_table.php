@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         if (!Schema::hasTable('tickets')) {
@@ -25,7 +22,6 @@ return new class extends Migration
                 $table->timestamps();
             });
         } else {
-            // Если таблица уже существует, добавляем недостающие колонки
             Schema::table('tickets', function (Blueprint $table) {
                 if (!Schema::hasColumn('tickets', 'reserved_until')) {
                     $table->timestamp('reserved_until')->nullable()->after('status');
@@ -40,9 +36,6 @@ return new class extends Migration
         }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('tickets');

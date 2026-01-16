@@ -103,7 +103,7 @@
     </div>
 
     <!-- Форма оплаты -->
-    <form method="POST" action="{{ route('payment.process', $order->id) }}" id="paymentForm">
+    <form method="POST" action="{{ route('client.orders.ticket.payment.process', $order->id) }}" id="paymentForm">
         @csrf
         <div class="mb-4 p-4 bg-gray-50 rounded-lg">
             <h3 class="font-semibold mb-3">Данные для оплаты</h3>

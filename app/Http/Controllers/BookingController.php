@@ -62,6 +62,6 @@ class BookingController extends Controller
             'travel_date' => $travelDate,
         ]);
 
-        return redirect()->route('payment.page', $ticket->id);
+        return redirect()->route('client.orders.ticket.payment', $ticket->id);
     }
 }

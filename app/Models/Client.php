@@ -27,9 +27,6 @@ class Client extends Model
         return $this->hasMany(Order::class, 'client_id');
     }
 
-    /**
-     * Связь с пассажирами
-     */
     public function passengers()
     {
         return $this->hasMany(Passenger::class, 'client_id');

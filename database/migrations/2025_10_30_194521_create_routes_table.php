@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('routes', function (Blueprint $table) {
@@ -17,7 +14,7 @@ return new class extends Migration
             $table->string('from_station');
             $table->string('to_station');
             $table->time('start');
-            $table->integer('duration'); // в минутах
+            $table->integer('duration');
             $table->decimal('price', 10, 2);
             $table->boolean('approved')->default(false);
             $table->timestamps();
@@ -26,9 +23,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('routes');

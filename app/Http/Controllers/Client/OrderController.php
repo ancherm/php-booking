@@ -33,14 +33,13 @@ class OrderController extends Controller
         $occupiedPlaces = $trip->places()->whereNotNull('passenger_id')->pluck('number_place')->toArray();
         $totalPlaces = $trip->route->bus->places;
         $availablePlaces = [];
-        
+
         for ($i = 1; $i <= $totalPlaces; $i++) {
             if (!in_array($i, $occupiedPlaces)) {
                 $availablePlaces[] = $i;
             }
         }
 
-        // Получаем ID пассажиров, которые уже имеют оплаченные заказы на этот рейс
         $paidPassengerIds = OrderPassenger::whereHas('order', function($query) use ($trip) {
             $query->where('trip_id', $trip->id)
                   ->where('status', 'paid');
@@ -67,7 +66,6 @@ class OrderController extends Controller
             return back()->with('error', 'Недостаточно свободных мест')->withInput();
         }
 
-        // Проверяем, что пассажиры не имеют уже оплаченных заказов на этот рейс
         $paidPassengerIds = OrderPassenger::whereHas('order', function($query) use ($trip) {
             $query->where('trip_id', $trip->id)
                   ->where('status', 'paid');
@@ -99,7 +97,7 @@ class OrderController extends Controller
 
             foreach ($validated['passengers'] as $passengerData) {
                 $passenger = $client->passengers()->findOrFail($passengerData['passenger_id']);
-                
+
                 $place = Place::firstOrCreate([
                     'trip_id' => $trip->id,
                     'number_place' => $passengerData['place_number'],
@@ -113,23 +111,23 @@ class OrderController extends Controller
                 $place->save();
 
                 $passengerPrice = $basePrice;
-                
+
                 $placeNumber = (int)$passengerData['place_number'];
                 $seatsPerRow = 4;
                 $positionInRow = (($placeNumber - 1) % $seatsPerRow) + 1;
                 if ($positionInRow == 1 || $positionInRow == $seatsPerRow) {
                     $passengerPrice += 200;
                 }
-                
+
                 $withPet = isset($passengerData['with_pet']) && $passengerData['with_pet'] == '1';
                 if ($withPet) {
                     $passengerPrice += 300;
                     $orderWithPet = true;
                 }
-                
+
                 $passengerPrice *= $weekendMultiplier;
                 $passengerPrice = round($passengerPrice, 2);
-                
+
                 $totalPrice += $passengerPrice;
 
                 OrderPassenger::create([
@@ -159,7 +157,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $client = auth()->user()->client;
-        
+
         if ($order->client_id !== $client->id) {
             abort(403);
         }
@@ -172,7 +170,7 @@ class OrderController extends Controller
     public function payment(Order $order)
     {
         $client = auth()->user()->client;
-        
+
         if ($order->client_id !== $client->id) {
             abort(403);
         }
@@ -194,7 +192,7 @@ class OrderController extends Controller
     public function processPayment(Request $request, Order $order)
     {
         $client = auth()->user()->client;
-        
+
         if ($order->client_id !== $client->id) {
             abort(403);
         }
@@ -231,7 +229,7 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         $client = auth()->user()->client;
-        
+
         if ($order->client_id !== $client->id) {
             abort(403);
         }

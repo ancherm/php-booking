@@ -18,7 +18,7 @@
                             <p>Дата: {{ $order->trip->date->format('d.m.Y') }}</p>
                             <p>Автобус: {{ $order->trip->route->bus->name }}</p>
                             <p>Пассажиры: {{ $order->orderPassengers->count() }} чел.</p>
-                            <p>Цена: {{ $order->trip->route->price * $order->orderPassengers->count() }} ₽</p>
+                            <p>Цена: {{ number_format($order->total_price ?? 0, 2) }} ₽</p>
                         </div>
                     </div>
                     <div class="flex flex-col gap-2">
